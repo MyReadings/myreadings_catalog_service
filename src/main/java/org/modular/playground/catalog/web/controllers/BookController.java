@@ -112,6 +112,16 @@ public class BookController {
         return Response.ok(responseDTOs).build();
     }
 
+    @POST
+    @Path("/batch")
+    @RolesAllowed({ "user", "admin" })
+    public Response getBooksByIds(List<UUID> bookIds) {
+        LOGGER.infof("Received batch request for %d books", bookIds != null ? bookIds.size() : 0);
+        List<Book> books = bookService.getBooksByIds(bookIds);
+        List<BookResponseDTO> responseDTOs = bookMapper.toResponseDTOs(books);
+        return Response.ok(responseDTOs).build();
+    }
+
     @GET
     @Path("/search")
     @RolesAllowed({ "user", "admin" })
