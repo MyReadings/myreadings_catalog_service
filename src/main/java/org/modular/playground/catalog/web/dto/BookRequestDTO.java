@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@io.quarkus.runtime.annotations.RegisterForReflection
 public class BookRequestDTO {
 
     @NotBlank(message = "ISBN is required")

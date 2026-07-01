@@ -16,6 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@io.quarkus.runtime.annotations.RegisterForReflection
 public class BookUpdateDTO {
 
     @NotBlank(message = "Title is required")
