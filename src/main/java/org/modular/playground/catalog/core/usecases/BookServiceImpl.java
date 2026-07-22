@@ -34,6 +34,9 @@ public class BookServiceImpl implements BookService {
     @ConfigProperty(name = "app.search.enrichment-strategy", defaultValue = "normal")
     String searchEnrichmentStrategy;
 
+    @ConfigProperty(name = "app.search.enrichment-delay-ms", defaultValue = "0")
+    long enrichmentDelayMs;
+
     @Override
     @Transactional
     public Book createBook(BookRequestDTO createBookRequestDTO) {
@@ -99,7 +102,16 @@ public class BookServiceImpl implements BookService {
     protected DomainPage<Book> refetchResultsIndividually(DomainPage<Book> results) {
         bookRepository.clearCache();
         List<Book> refetched = results.content().stream()
-            .map(book -> bookRepository.findById(book.getBookId()).orElse(book))
+            .map(book -> {
+                if (enrichmentDelayMs > 0) {
+                    try {
+                        Thread.sleep(enrichmentDelayMs);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                return bookRepository.findById(book.getBookId()).orElse(book);
+            })
             .collect(Collectors.toList());
         return new DomainPage<>(refetched, results.totalElements(), results.totalPages(),
                 results.pageNumber(), results.pageSize(), results.isLast(), results.isFirst());
