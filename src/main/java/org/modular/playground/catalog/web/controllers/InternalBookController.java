@@ -1,6 +1,7 @@
 package org.modular.playground.catalog.web.controllers;
 
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.*;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -28,7 +29,7 @@ public class InternalBookController {
 
     @POST
     @Path("/batch")
-    public List<BookResponseDTO> getBooksByIds(List<UUID> bookIds) {
+    public List<BookResponseDTO> getBooksByIds(@NotNull @Size(max = 500) List<@NotNull UUID> bookIds) {
         LOGGER.debugf("Internal batch request for %d books", bookIds.size());
         List<Book> books = bookService.getBooksByIds(bookIds);
         return bookMapper.toResponseDTOs(books);

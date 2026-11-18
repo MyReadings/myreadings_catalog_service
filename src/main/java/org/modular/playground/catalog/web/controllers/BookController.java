@@ -3,9 +3,8 @@ package org.modular.playground.catalog.web.controllers;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.*;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -39,7 +38,7 @@ public class BookController {
 
     @POST
     @RolesAllowed("admin")
-    public Response createBook(@Valid BookRequestDTO createBookRequestDTO) {
+    public Response createBook(@NotNull @Valid BookRequestDTO createBookRequestDTO) {
         LOGGER.infof("Received request to create book with ISBN: %s", createBookRequestDTO.getIsbn());
         Book createdBook = bookService.createBook(createBookRequestDTO);
         BookResponseDTO responseDTO = bookMapper.toResponseDTO(createdBook);
@@ -50,7 +49,7 @@ public class BookController {
     @PUT
     @Path("/{bookId}")
     @RolesAllowed("admin")
-    public Response updateBook(@PathParam("bookId") UUID bookId, @Valid BookUpdateDTO updateDTO) {
+    public Response updateBook(@PathParam("bookId") UUID bookId, @NotNull @Valid BookUpdateDTO updateDTO) {
         LOGGER.infof("Received request to update book with ID: %s", bookId);
 
         Optional<Book> updatedBookOpt = bookService.updateBook(bookId, updateDTO);
@@ -103,7 +102,7 @@ public class BookController {
     public Response getAllBooks(
             @QueryParam("sort") String sort,
             @QueryParam("order") String order,
-            @QueryParam("limit") Integer limit) {
+            @DefaultValue("100") @Min(1) @Max(100) @QueryParam("limit") Integer limit) {
         LOGGER.infof("Received request to get all books with parameters [sort: %s, order: %s, limit: %s]",
                 sort, order, limit);
         List<Book> books = bookService.getAllBooks(sort, order, limit);
@@ -115,7 +114,7 @@ public class BookController {
     @POST
     @Path("/batch")
     @RolesAllowed({ "user", "admin" })
-    public Response getBooksByIds(List<UUID> bookIds) {
+    public Response getBooksByIds(@NotNull @Size(max = 500) List<@NotNull UUID> bookIds) {
         LOGGER.infof("Received batch request for %d books", bookIds != null ? bookIds.size() : 0);
         List<Book> books = bookService.getBooksByIds(bookIds);
         List<BookResponseDTO> responseDTOs = bookMapper.toResponseDTOs(books);
@@ -126,9 +125,9 @@ public class BookController {
     @Path("/search")
     @RolesAllowed({ "user", "admin" })
     public PagedResponse<BookResponseDTO> searchBooks(
-            @NotNull @NotBlank @QueryParam("query") String query,
-            @DefaultValue("0") @QueryParam("page") int page,
-            @DefaultValue("10") @QueryParam("size") int size,
+            @NotNull @NotBlank @Size(max = 500) @QueryParam("query") String query,
+            @DefaultValue("0") @Min(0) @Max(1000000) @QueryParam("page") int page,
+            @DefaultValue("10") @Min(1) @Max(100) @QueryParam("size") int size,
             @DefaultValue("title") @QueryParam("sort") String sortBy,
             @DefaultValue("asc") @QueryParam("order") String sortOrder) {
         LOGGER.infof("Received book search request with query: '%s', page: %d, size: %d", query, page, size);
