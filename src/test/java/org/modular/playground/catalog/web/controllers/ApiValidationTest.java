@@ -51,5 +51,22 @@ public class ApiValidationTest {
     @Test
     void nullCreateBodyIsRejected() {
         given().contentType("application/json").body("null").post("/api/v1/books").then().statusCode(400).contentType("application/json");
+    }    @Test
+    @TestSecurity
+    void internalReadsRejectAnonymousRequests() {
+        given().contentType("application/json").body("[]").post("/api/internal/books/batch").then().statusCode(401);
     }
+
+    @Test
+    @TestSecurity(user = "outsider", roles = "unrelated")
+    void internalReadsRejectUnrelatedRoles() {
+        given().contentType("application/json").body("[]").post("/api/internal/books/batch").then().statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(user = "demo", roles = "user")
+    void internalReadsAcceptExistingApplicationRole() {
+        given().contentType("application/json").body("[]").post("/api/internal/books/batch").then().statusCode(200);
+    }
+
 }

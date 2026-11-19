@@ -1,6 +1,7 @@
 package org.modular.playground.catalog.web.controllers;
 
 import jakarta.inject.Inject;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.constraints.*;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 @Path("/api/internal/books")
 @Produces(MediaType.APPLICATION_JSON)
+@RolesAllowed({"user", "admin"})
 @Consumes(MediaType.APPLICATION_JSON)
 public class InternalBookController {
 
